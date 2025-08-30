@@ -1,4 +1,4 @@
-package com.example.githubapp.ui.data
+package com.example.githubapp.ui.blank.data
 
 /**
  * Blank screen ViewState for MVI architecture

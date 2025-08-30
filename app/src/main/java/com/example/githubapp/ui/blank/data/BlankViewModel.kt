@@ -1,14 +1,16 @@
-package com.example.githubapp.ui.viewModel
+package com.example.githubapp.ui.blank.data
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.githubapp.ui.data.BlankViewIntent
-import com.example.githubapp.ui.data.BlankViewState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the blank screen implementing MVI architecture
@@ -21,11 +23,11 @@ class BlankViewModel : ViewModel() {
 
     // ViewIntent represents user actions
     private val _viewIntent = Channel<BlankViewIntent>(Channel.UNLIMITED)
-    val viewIntent = _viewIntent
 
     init {
         handleIntents()
     }
+    
 
     /**
      * Process user intents
@@ -68,5 +70,13 @@ class BlankViewModel : ViewModel() {
         viewModelScope.launch {
             _viewIntent.send(intent)
         }
+    }
+    
+    /**
+     * Clear resources when ViewModel is cleared
+     */
+    override fun onCleared() {
+        super.onCleared()
+        _viewIntent.close()
     }
 }
