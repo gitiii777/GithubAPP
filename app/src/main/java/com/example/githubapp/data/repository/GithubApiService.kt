@@ -46,7 +46,9 @@ data class Repository(
     val html_url: String,
     val stargazers_count: Int,
     val language: String?,
-    val owner: Owner
+    val owner: Owner,
+    val languages_url: String?,
+    val stargazers_url: String,
 )
 
 data class Owner(

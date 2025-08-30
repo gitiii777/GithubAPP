@@ -2,8 +2,8 @@ package com.example.githubapp.data.usecase
 
 import android.util.Log
 import com.example.githubapp.data.repository.GithubApiClient
-import com.example.githubapp.data.repository.Repository
 import com.example.githubapp.data.repository.ReadmeDecoder
+import com.example.githubapp.data.repository.Repository
 
 class GitApiController : IGitApiController {
     companion object {
@@ -18,7 +18,10 @@ class GitApiController : IGitApiController {
                     Log.d(TAG, "getRepositories: size: ${it?.size}")
                 } ?: emptyList()
             } else {
-                Log.e(TAG, "getRepositories: error response: ${response.code()} ${response.message()}")
+                Log.e(
+                    TAG,
+                    "getRepositories: error response: ${response.code()} ${response.message()}"
+                )
                 throw Exception("Failed to load repositories: ${response.message()}")
             }
         } catch (e: Exception) {
@@ -26,7 +29,7 @@ class GitApiController : IGitApiController {
             throw e
         }
     }
-    
+
     /**
      * 获取指定仓库的README内容
      *
@@ -46,11 +49,48 @@ class GitApiController : IGitApiController {
                     "README not found"
                 }
             } else {
-                Log.e(TAG, "getRepositoryReadme: error response: ${response.code()} ${response.message()}")
+                Log.e(
+                    TAG,
+                    "getRepositoryReadme: error response: ${response.code()} ${response.message()}"
+                )
                 throw Exception("Failed to load README: ${response.message()}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "getRepositoryReadme: error: ", e)
+            throw e
+        }
+    }
+
+    /**
+     * 根据关键词搜索仓库
+     *
+     * @param query 搜索关键词
+     * @return 搜索结果列表
+     */
+    override suspend fun searchRepositories(
+        query: String,
+        sort: String?,
+        order: String?,
+    ): List<Repository> {
+        return try {
+            val response = GithubApiClient.apiService.searchRepositories(
+                query = query,
+                sort = sort,
+                order = order,
+            )
+            if (response.isSuccessful) {
+                response.body()?.items?.also {
+                    Log.d(TAG, "searchRepositories: size: ${it.size}")
+                } ?: emptyList()
+            } else {
+                Log.e(
+                    TAG,
+                    "searchRepositories: error response: ${response.code()} ${response.message()}"
+                )
+                throw Exception("Failed to search repositories: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "searchRepositories: error: ", e)
             throw e
         }
     }
