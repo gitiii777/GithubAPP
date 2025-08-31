@@ -36,14 +36,12 @@ class LoginViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = LoginViewState.Loading
-                
+
                 // GitHub API使用Personal Access Token而不是用户名/密码
-                // 这里我们模拟验证过程，实际应用中应该使用真正的API验证
-                if (username.isNotEmpty() && password.isNotEmpty()) {
-                    authManager.saveToken()
+                if (authManager.isAccountCorrect(username, password)) {
                     _viewState.value = LoginViewState.Success
                 } else {
-                    _viewState.value = LoginViewState.Error("用户名和密码不能为空")
+                    _viewState.value = LoginViewState.Error("用户名或密码不正确")
                 }
             } catch (e: Exception) {
                 _viewState.value = LoginViewState.Error("登录失败: ${e.message}")

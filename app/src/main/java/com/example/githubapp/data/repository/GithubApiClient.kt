@@ -1,7 +1,6 @@
 package com.example.githubapp.data.repository
 
 import android.content.Context
-import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -23,8 +22,6 @@ object GithubApiClient {
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
         val token = authManager.authToken.value
-
-        Log.d(TAG, "authInterceptor: token: $token")
 
         val newRequest = if (!token.isNullOrEmpty()) {
             originalRequest.newBuilder()
