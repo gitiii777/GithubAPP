@@ -54,15 +54,21 @@ dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.navigation.compose.android)
 
+    // network
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")// Retrofit core
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Gson converter for JSON parsing
+
+    // Testing dependencies
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.7.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.1")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.1")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.1")
-
-    // network
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")// Retrofit core
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Gson converter for JSON parsing
-
 }

@@ -162,3 +162,8 @@ data class Label(
     val color: String,
     val description: String?
 )
+
+data class ReadmeData(
+    val content: String,
+    val encoding: String,
+)

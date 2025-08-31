@@ -27,6 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.githubapp.data.repository.AuthCacheManager
 import com.example.githubapp.data.repository.AuthManager
 import com.example.githubapp.data.repository.GithubApiClient
 import com.example.githubapp.ui.githubscreen.IssueDetailScreen
@@ -57,7 +58,9 @@ class MainActivity : ComponentActivity() {
         // 初始化GithubApiClient
         GithubApiClient.initialize(this)
         // 初始化AuthManager
-        authManager = AuthManager.getInstance(this)
+        authManager = AuthManager.getInstance(
+            AuthCacheManager.getInstance(this)
+        )
 
         setContent {
             GithubAPPTheme {

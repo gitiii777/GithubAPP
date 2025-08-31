@@ -12,16 +12,15 @@ private const val TAG = "GithubApiClient"
 object GithubApiClient {
     private const val BASE_URL = "https://api.github.com/"
     
-    private lateinit var authManager: AuthManager
+    private var authManager: AuthManager? = null
     
     fun initialize(context: Context) {
-        authManager = AuthManager.getInstance(context)
+        authManager = AuthManager.getInstance(AuthCacheManager.getInstance(context))
     }
-    
-    
+
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
-        val token = authManager.authToken.value
+        val token = authManager?.authToken?.value
 
         val newRequest = if (!token.isNullOrEmpty()) {
             originalRequest.newBuilder()

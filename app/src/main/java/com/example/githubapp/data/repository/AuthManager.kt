@@ -1,15 +1,14 @@
 package com.example.githubapp.data.repository
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.edit
 
 /**
  * 认证管理器，用于管理用户登录状态
  */
-class AuthManager private constructor(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("github_auth", Context.MODE_PRIVATE)
+class AuthManager private constructor(
+    private val cacheManager: AuthCacheManager,
+) {
+
     private val iToken = "35acf59ae8341b133c3a484c7990d1cf1ca0306e03191fe6ade30de4706e3f9c"
 
     // 使用MutableStateOf以便Compose可以监听状态变化
@@ -18,7 +17,7 @@ class AuthManager private constructor(context: Context) {
 
     init {
         // 初始化时检查是否有保存的token
-        val token = prefs.getString("auth_token", null)
+        val token = cacheManager.getString("auth_token")
         isLoggedIn.value = !token.isNullOrEmpty()
         authToken.value = token
     }
@@ -30,7 +29,7 @@ class AuthManager private constructor(context: Context) {
         if (token.isEmpty()) {
             return
         }
-        prefs.edit(commit = true) { putString("auth_token", token) }
+        cacheManager.putString("auth_token", token, commit = true)
         authToken.value = token
         isLoggedIn.value = true
     }
@@ -39,7 +38,7 @@ class AuthManager private constructor(context: Context) {
      * 清除认证信息
      */
     fun clearAuth() {
-        prefs.edit { remove("auth_token") }
+        cacheManager.removeString("auth_token")
         authToken.value = null
         isLoggedIn.value = false
     }
@@ -70,9 +69,9 @@ class AuthManager private constructor(context: Context) {
         @Volatile
         private var INSTANCE: AuthManager? = null
         
-        fun getInstance(context: Context): AuthManager {
+        fun getInstance(authCacheManager: AuthCacheManager): AuthManager {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: AuthManager(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: AuthManager(authCacheManager).also { INSTANCE = it }
             }
         }
     }

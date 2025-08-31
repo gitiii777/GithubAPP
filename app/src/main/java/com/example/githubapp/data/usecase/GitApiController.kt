@@ -1,9 +1,9 @@
 package com.example.githubapp.data.usecase
 
-import android.util.Log
 import com.example.githubapp.data.repository.GithubApiClient
 import com.example.githubapp.data.repository.Issue
 import com.example.githubapp.data.repository.IssueRequest
+import com.example.githubapp.data.repository.ReadmeData
 import com.example.githubapp.data.repository.Repository
 import com.example.githubapp.data.repository.User
 
@@ -12,7 +12,7 @@ private const val TAG = "GitApiController"
 class GitApiController : IGitApiController {
 
     override suspend fun getRepositories(): List<Repository> {
-        Log.d(TAG, "getRepositories: ")
+//        Log.d(TAG, "getRepositories: ")
         val response = GithubApiClient.apiService.getRepositories()
         if (response.isSuccessful) {
             return response.body() ?: emptyList()
@@ -21,16 +21,12 @@ class GitApiController : IGitApiController {
         }
     }
 
-    override suspend fun getRepositoryReadme(owner: String, repo: String, ref: String?): String {
-        Log.d(TAG, "getRepositoryReadme: owner=$owner, repo=$repo, ref=$ref")
+    override suspend fun getRepositoryReadme(owner: String, repo: String, ref: String?): ReadmeData {
+//        Log.d(TAG, "getRepositoryReadme: owner=$owner, repo=$repo, ref=$ref")
         val response = GithubApiClient.apiService.getRepositoryReadme(owner, repo, ref)
         if (response.isSuccessful) {
             val readme = response.body()
-            return if (readme != null && readme.encoding == "base64") {
-                String(android.util.Base64.decode(readme.content, android.util.Base64.DEFAULT))
-            } else {
-                readme?.content ?: ""
-            }
+            return ReadmeData(readme?.content ?: "", readme?.encoding ?: "")
         } else {
             throw Exception("Failed to fetch README: ${response.message()}")
         }
@@ -41,7 +37,7 @@ class GitApiController : IGitApiController {
         sort: String?,
         order: String?
     ): List<Repository> {
-        Log.d(TAG, "searchRepositories: query=$query, sort=$sort, order=$order")
+//        Log.d(TAG, "searchRepositories: query=$query, sort=$sort, order=$order")
         val response = GithubApiClient.apiService.searchRepositories(query, sort, order)
         if (response.isSuccessful) {
             return response.body()?.items ?: emptyList()
@@ -51,7 +47,7 @@ class GitApiController : IGitApiController {
     }
 
     override suspend fun getAuthenticatedUser(): User {
-        Log.d(TAG, "getAuthenticatedUser: ")
+//        Log.d(TAG, "getAuthenticatedUser: ")
         val response = GithubApiClient.apiService.getAuthenticatedUser()
         if (response.isSuccessful) {
             return response.body() ?: throw Exception("User data is null")
@@ -61,7 +57,7 @@ class GitApiController : IGitApiController {
     }
     
     override suspend fun getUserRepositories(): List<Repository> {
-        Log.d(TAG, "getUserRepositories: ")
+//        Log.d(TAG, "getUserRepositories: ")
         val response = GithubApiClient.apiService.getUserRepositories()
         if (response.isSuccessful) {
             return response.body() ?: emptyList()
@@ -71,7 +67,7 @@ class GitApiController : IGitApiController {
     }
     
     override suspend fun createIssue(owner: String, repo: String, issueRequest: IssueRequest): Issue {
-        Log.d(TAG, "createIssue: owner=$owner, repo=$repo, title=${issueRequest.title}")
+//        Log.d(TAG, "createIssue: owner=$owner, repo=$repo, title=${issueRequest.title}")
         val response = GithubApiClient.apiService.createIssue(owner, repo, issueRequest)
         if (response.isSuccessful) {
             return response.body() ?: throw Exception("Issue data is null")
@@ -81,7 +77,7 @@ class GitApiController : IGitApiController {
     }
     
     override suspend fun getRepositoryIssues(owner: String, repo: String, state: String?): List<Issue> {
-        Log.d(TAG, "getRepositoryIssues: owner=$owner, repo=$repo, state=$state")
+//        Log.d(TAG, "getRepositoryIssues: owner=$owner, repo=$repo, state=$state")
         val response = GithubApiClient.apiService.getRepositoryIssues(owner, repo, state)
         if (response.isSuccessful) {
             return response.body() ?: emptyList()

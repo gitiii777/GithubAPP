@@ -54,7 +54,12 @@ class RepoReadmeViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = _viewState.value.copy(isLoading = true, error = "")
-                val readmeContent = gitApiController.getRepositoryReadme(owner, repo)
+                val readmeData = gitApiController.getRepositoryReadme(owner, repo)
+                val readmeContent = if (readmeData.encoding == "base64") {
+                    String(android.util.Base64.decode(readmeData.content, android.util.Base64.DEFAULT))
+                } else {
+                    readmeData.content
+                }
                 _viewState.value = _viewState.value.copy(
                     isLoading = false,
                     readmeContent = readmeContent
