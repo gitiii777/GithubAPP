@@ -3,8 +3,6 @@ package com.example.githubapp.ui.githubscreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,88 +21,78 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.githubapp.ui.githubscreen.data.RepoReadmeIntent
 import com.example.githubapp.ui.githubscreen.data.RepoReadmeViewModel
+import com.example.githubapp.ui.githubscreen.data.RepoReadmeViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoReadmeScreen(
     owner: String,
     repo: String,
-    viewModel: RepoReadmeViewModel = viewModel(),
-    navController: NavController? = null
+    viewModel: RepoReadmeViewModel,
+    navController: NavController
 ) {
     val viewState by viewModel.viewState.collectAsState()
-    
-    LaunchedEffect(owner, repo) {
+
+    LaunchedEffect(Unit) {
         viewModel.processIntent(RepoReadmeIntent.LoadReadme(owner, repo))
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("README")
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                )
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+                title = {
+                    Text("$repo README")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                }
             )
         }
-    ) { paddingValues ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            when {
-                viewState.isLoading -> {
-                    Text(text = "Loading README...")
-                }
-                viewState.readmeContent.isNotEmpty() -> {
-                    ReadmeContent(readmeContent = viewState.readmeContent)
-                }
-                viewState.error.isNotEmpty() -> {
-                    Text(
-                        text = "Error: ${viewState.error}",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                else -> {
-                    Text(text = "No README content available")
+            when (val state = viewState) {
+                is RepoReadmeViewState -> {
+                    if (state.isLoading) {
+                        Text(
+                            text = "Loading README...",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else if (state.error.isNotEmpty()) {
+                        Text(
+                            text = "Error loading README: ${state.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else {
+                        Text(
+                            text = state.readmeContent,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily.Monospace
+                            ),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ReadmeContent(readmeContent: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = readmeContent,
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Monospace
-            )
-        )
     }
 }

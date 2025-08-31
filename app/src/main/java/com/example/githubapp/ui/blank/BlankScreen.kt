@@ -104,6 +104,10 @@ fun BlankScreen(
 fun BlankScreenPreview() {
     MaterialTheme {
         // In preview, we can't create a real ViewModel, so we just show the UI with default state
-        Text("Welcome to Github App")
+        BlankScreen(
+            viewModel = TODO("Provide a preview ViewModel instance"),
+            onGetRepositories = {},
+            onSearch = {}
+        )
     }
 }

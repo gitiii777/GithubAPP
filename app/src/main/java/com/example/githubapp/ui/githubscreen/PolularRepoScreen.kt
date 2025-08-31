@@ -36,8 +36,7 @@ import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
 fun PopularRepoScreen(
     viewModel: PopularRepoViewModel,
     onRepositoryClick: (String, String) -> Unit = { _, _ -> },
-    navController: NavController? = null,
-    modifier: Modifier = Modifier
+    navController: NavController
 ) {
     val viewState by viewModel.viewState.collectAsState()
     
@@ -49,26 +48,26 @@ fun PopularRepoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("Popular Repositories")
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController?.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                )
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+                title = {
+                    Text("热门仓库")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
             contentAlignment = Alignment.Center

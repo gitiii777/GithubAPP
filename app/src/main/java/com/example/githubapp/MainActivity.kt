@@ -5,36 +5,64 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.githubapp.data.repository.AuthManager
+import com.example.githubapp.data.repository.GithubApiClient
 import com.example.githubapp.ui.blank.BlankScreen
 import com.example.githubapp.ui.blank.SearchScreen
 import com.example.githubapp.ui.blank.data.BlankViewModel
+import com.example.githubapp.ui.githubscreen.LoginScreen
 import com.example.githubapp.ui.githubscreen.PopularRepoScreen
 import com.example.githubapp.ui.githubscreen.RepoReadmeScreen
+import com.example.githubapp.ui.githubscreen.UserProfileScreen
+import com.example.githubapp.ui.githubscreen.data.LoginViewModel
+import com.example.githubapp.ui.githubscreen.data.LoginViewModelFactory
 import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
 import com.example.githubapp.ui.githubscreen.data.RepoReadmeViewModel
+import com.example.githubapp.ui.githubscreen.data.UserProfileViewModel
 import com.example.githubapp.ui.theme.GithubAPPTheme
 
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
+    private lateinit var authManager: AuthManager
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 初始化GithubApiClient
+        GithubApiClient.initialize(this)
+        // 初始化AuthManager
+        authManager = AuthManager.getInstance(this)
+        
         setContent {
             GithubAPPTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    MainScreen(authManager = authManager)
                 }
             }
         }
@@ -42,11 +70,78 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController = rememberNavController()) {
+fun MainScreen(authManager: AuthManager) {
+    val navController = rememberNavController()
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        }
+    ) { innerPadding ->
+        AppNavigation(
+            navController = navController,
+            authManager = authManager,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavHostController) {
+    val items = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Profile
+    )
+
+    NavigationBar {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        items.forEach { screen ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = screen.title
+                    )
+                },
+                label = { Text(screen.title) },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppNavigation(
+    navController: NavHostController,
+    authManager: AuthManager,
+    modifier: Modifier = Modifier
+) {
     Log.d(TAG, "AppNavigation: enter")
 
-    NavHost(navController = navController, startDestination = "blank") {
-        composable(GithubAppRouteName.Blank.title) {
+    NavHost(
+        navController = navController,
+        startDestination = BottomNavItem.Home.route,
+        modifier = modifier
+    ) {
+        composable(BottomNavItem.Home.route) {
             val blankViewModel: BlankViewModel = viewModel()
             BlankScreen(
                 viewModel = blankViewModel,
@@ -80,12 +175,35 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 navController = navController
             )
         }
+        composable(BottomNavItem.Profile.route) {
+            val userProfileViewModel: UserProfileViewModel = viewModel()
+            UserProfileScreen(
+                viewModel = userProfileViewModel,
+                authManager = authManager,
+                navController = navController
+            )
+        }
+        composable(GithubAppRouteName.Login.title) {
+            val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(authManager))
+            LoginScreen(
+                authManager = authManager,
+                viewModel = loginViewModel,
+                navController = navController
+            )
+        }
     }
 }
 
+sealed class BottomNavItem(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    object Home : BottomNavItem(GithubAppRouteName.Home.title, "首页", Icons.Default.Home)
+    object Profile : BottomNavItem(GithubAppRouteName.Profile.title, "我的", Icons.Default.AccountCircle)
+}
+
 enum class GithubAppRouteName(val title: String) {
-    Blank("Blank"),
+    Home("home"),
     PopularRepo("PopularRepo"),
     RepoReadme("RepoReadme"),
-    Search("search")
+    Search("search"),
+    Profile("profile"),
+    Login("login"),
 }

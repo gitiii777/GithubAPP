@@ -1,66 +1,53 @@
 package com.example.githubapp.data.repository
 
+import android.content.Context
+import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+private const val TAG = "GithubApiClient"
 
 object GithubApiClient {
     private const val BASE_URL = "https://api.github.com/"
-    private const val TRENDING_API_URL = "https://ghapi.huchen.dev/"
-
-    private var authInterceptor = Interceptor { chain ->
-        val request = chain.request().newBuilder()
-            .build()
-        chain.proceed(request)
+    
+    private lateinit var authManager: AuthManager
+    
+    fun initialize(context: Context) {
+        authManager = AuthManager.getInstance(context)
     }
+    
+    
+    private val authInterceptor = Interceptor { chain ->
+        val originalRequest = chain.request()
+        val token = authManager.authToken.value
 
-    private var okHttpClient = OkHttpClient.Builder()
+        Log.d(TAG, "authInterceptor: token: $token")
+
+        val newRequest = if (!token.isNullOrEmpty()) {
+            originalRequest.newBuilder()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+        } else {
+            originalRequest
+        }
+        
+        chain.proceed(newRequest)
+    }
+    
+    private val okHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(authInterceptor)
         .build()
-
-    private var retrofit: Retrofit = Retrofit.Builder()
+    
+    val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-        
-    private var trendingRetrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(TRENDING_API_URL)
-        .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    var apiService: GithubApiService = retrofit.create(GithubApiService::class.java)
-
-    fun setAuthToken(token: String) {
-        authInterceptor = Interceptor { chain ->
-            val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
-            chain.proceed(request)
-        }
-
-        okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .build()
-
-        retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            
-        trendingRetrofit = Retrofit.Builder()
-            .baseUrl(TRENDING_API_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        apiService = retrofit.create(GithubApiService::class.java)
-    }
     
-    fun getTrendingApiService(): GithubApiService {
-        return trendingRetrofit.create(GithubApiService::class.java)
-    }
+    val apiService: GithubApiService = retrofit.create(GithubApiService::class.java)
 }

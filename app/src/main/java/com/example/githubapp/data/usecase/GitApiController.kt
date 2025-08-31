@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.githubapp.data.repository.GithubApiClient
 import com.example.githubapp.data.repository.ReadmeDecoder
 import com.example.githubapp.data.repository.Repository
+import com.example.githubapp.data.repository.User
 
 class GitApiController : IGitApiController {
     companion object {
@@ -15,7 +16,7 @@ class GitApiController : IGitApiController {
             val response = GithubApiClient.apiService.getRepositories()
             if (response.isSuccessful) {
                 response.body()?.also {
-                    Log.d(TAG, "getRepositories: size: ${it?.size}")
+                    Log.d(TAG, "getRepositories: size: ${it.size}")
                 } ?: emptyList()
             } else {
                 Log.e(
@@ -91,6 +92,31 @@ class GitApiController : IGitApiController {
             }
         } catch (e: Exception) {
             Log.e(TAG, "searchRepositories: error: ", e)
+            throw e
+        }
+    }
+
+    /**
+     * 获取认证用户信息
+     *
+     * @return 当前认证用户的信息
+     */
+    override suspend fun getAuthenticatedUser(): User {
+        return try {
+            val response = GithubApiClient.apiService.getAuthenticatedUser()
+            if (response.isSuccessful) {
+                response.body()?.also {
+                    Log.d(TAG, "getAuthenticatedUser: $it")
+                } ?: throw Exception("User not found")
+            } else {
+                Log.e(
+                    TAG,
+                    "getAuthenticatedUser: error response: ${response.code()} ${response.message()}"
+                )
+                throw Exception("Failed to get user info: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getAuthenticatedUser: error: ", e)
             throw e
         }
     }

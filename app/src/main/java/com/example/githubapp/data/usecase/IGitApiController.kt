@@ -1,6 +1,7 @@
 package com.example.githubapp.data.usecase
 
 import com.example.githubapp.data.repository.Repository
+import com.example.githubapp.data.repository.User
 
 interface IGitApiController {
     suspend fun getRepositories(): List<Repository>
@@ -10,4 +11,5 @@ interface IGitApiController {
         sort: String? = null,
         order: String? = null
     ): List<Repository>
+    suspend fun getAuthenticatedUser(): User
 }
