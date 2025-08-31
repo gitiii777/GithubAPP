@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.githubapp.data.usecase.GitApiController
 import com.example.githubapp.data.usecase.IGitApiController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the user repositories screen implementing MVI architecture
@@ -44,8 +46,10 @@ class UserRepoViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = UserRepoViewState.Loading
-                val repositories = gitApiController.getUserRepositories()
-                _viewState.value = UserRepoViewState.Success(repositories)
+                withContext(Dispatchers.IO) {
+                    val repositories = gitApiController.getUserRepositories()
+                    _viewState.value = UserRepoViewState.Success(repositories)
+                }
             } catch (e: Exception) {
                 _viewState.value = UserRepoViewState.Error(e.message ?: "Unknown error")
             }

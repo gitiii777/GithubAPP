@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.githubapp.data.usecase.GitApiController
 import com.example.githubapp.data.usecase.IGitApiController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class IssueDetailViewModel(
     private val gitApiController: IGitApiController = GitApiController()
@@ -27,20 +29,22 @@ class IssueDetailViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = _viewState.value.copy(isLoading = true, error = "")
-                // 由于API限制，我们通过获取所有issues然后筛选特定issue的方式来实现
-                val issues = gitApiController.getRepositoryIssues(owner, repo, null)
-                val issue = issues.find { it.number == issueNumber }
-                
-                if (issue != null) {
-                    _viewState.value = _viewState.value.copy(
-                        isLoading = false,
-                        issue = issue
-                    )
-                } else {
-                    _viewState.value = _viewState.value.copy(
-                        isLoading = false,
-                        error = "Issue not found"
-                    )
+
+                withContext(Dispatchers.IO) {
+                    val issues = gitApiController.getRepositoryIssues(owner, repo, null)
+                    val issue = issues.find { it.number == issueNumber }
+
+                    if (issue != null) {
+                        _viewState.value = _viewState.value.copy(
+                            isLoading = false,
+                            issue = issue
+                        )
+                    } else {
+                        _viewState.value = _viewState.value.copy(
+                            isLoading = false,
+                            error = "Issue not found"
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _viewState.value = _viewState.value.copy(

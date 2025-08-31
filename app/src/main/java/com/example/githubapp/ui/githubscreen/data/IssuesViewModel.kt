@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.githubapp.data.usecase.GitApiController
 import com.example.githubapp.data.usecase.IGitApiController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class IssuesViewModel(
     private val gitApiController: IGitApiController = GitApiController()
@@ -30,11 +32,13 @@ class IssuesViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = _viewState.value.copy(isLoading = true, error = "")
-                val issues = gitApiController.getRepositoryIssues(owner, repo, state)
-                _viewState.value = _viewState.value.copy(
-                    isLoading = false,
-                    issues = issues
-                )
+                withContext(Dispatchers.IO) {
+                    val issues = gitApiController.getRepositoryIssues(owner, repo, state)
+                    _viewState.value = _viewState.value.copy(
+                        isLoading = false,
+                        issues = issues
+                    )
+                }
             } catch (e: Exception) {
                 _viewState.value = _viewState.value.copy(
                     isLoading = false,

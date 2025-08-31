@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.githubapp.data.usecase.GitApiController
 import com.example.githubapp.data.usecase.IGitApiController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for the user profile screen implementing MVI architecture
@@ -49,8 +51,10 @@ class UserProfileViewModel(
             Log.d(TAG, "loadUserProfile: ")
             try {
                 _viewState.value = UserProfileViewState.Loading
-                val user = gitApiController.getAuthenticatedUser()
-                _viewState.value = UserProfileViewState.Success(user)
+                withContext(Dispatchers.IO) {
+                    val user = gitApiController.getAuthenticatedUser()
+                    _viewState.value = UserProfileViewState.Success(user)
+                }
             } catch (e: Exception) {
                 _viewState.value = UserProfileViewState.Error(e.message ?: "Unknown error")
             }

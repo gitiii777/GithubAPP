@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.githubapp.data.repository.IssueRequest
 import com.example.githubapp.data.usecase.GitApiController
 import com.example.githubapp.data.usecase.IGitApiController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RepoReadmeViewModel(
     private val gitApiController: IGitApiController = GitApiController()
@@ -54,16 +56,18 @@ class RepoReadmeViewModel(
         viewModelScope.launch {
             try {
                 _viewState.value = _viewState.value.copy(isLoading = true, error = "")
-                val readmeData = gitApiController.getRepositoryReadme(owner, repo)
-                val readmeContent = if (readmeData.encoding == "base64") {
-                    String(android.util.Base64.decode(readmeData.content, android.util.Base64.DEFAULT))
-                } else {
-                    readmeData.content
+                withContext(Dispatchers.IO) {
+                    val readmeData = gitApiController.getRepositoryReadme(owner, repo)
+                    val readmeContent = if (readmeData.encoding == "base64") {
+                        String(android.util.Base64.decode(readmeData.content, android.util.Base64.DEFAULT))
+                    } else {
+                        readmeData.content
+                    }
+                    _viewState.value = _viewState.value.copy(
+                        isLoading = false,
+                        readmeContent = readmeContent
+                    )
                 }
-                _viewState.value = _viewState.value.copy(
-                    isLoading = false,
-                    readmeContent = readmeContent
-                )
             } catch (e: Exception) {
                 Log.e(TAG, "loadReadme: error: ", e)
                 _viewState.value = _viewState.value.copy(
@@ -81,14 +85,15 @@ class RepoReadmeViewModel(
                     issueCreationLoading = true,
                     issueCreationError = ""
                 )
-                
-                gitApiController.createIssue(owner, repo, issueRequest)
-                
-                _viewState.value = _viewState.value.copy(
-                    issueCreationLoading = false,
-                    issueCreationSuccess = true,
-                    showCreateIssueDialog = false
-                )
+                withContext(Dispatchers.IO) {
+                    gitApiController.createIssue(owner, repo, issueRequest)
+
+                    _viewState.value = _viewState.value.copy(
+                        issueCreationLoading = false,
+                        issueCreationSuccess = true,
+                        showCreateIssueDialog = false
+                    )
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "createIssue: error: ", e)
                 _viewState.value = _viewState.value.copy(
