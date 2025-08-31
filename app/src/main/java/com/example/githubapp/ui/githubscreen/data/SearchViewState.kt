@@ -1,4 +1,4 @@
-package com.example.githubapp.ui.blank.data
+package com.example.githubapp.ui.githubscreen.data
 
 import com.example.githubapp.data.repository.Repository
 

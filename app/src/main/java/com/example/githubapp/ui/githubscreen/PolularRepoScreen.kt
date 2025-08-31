@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import com.example.githubapp.data.repository.Repository
 import com.example.githubapp.ui.githubscreen.data.PopularRepoViewIntent
 import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
 
@@ -36,7 +32,6 @@ import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
 fun PopularRepoScreen(
     viewModel: PopularRepoViewModel,
     onRepositoryClick: (String, String) -> Unit = { _, _ -> },
-    navController: NavController
 ) {
     val viewState by viewModel.viewState.collectAsState()
     
@@ -55,14 +50,6 @@ fun PopularRepoScreen(
                 title = {
                     Text("热门仓库")
                 },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                }
             )
         }
     ) { innerPadding ->
@@ -104,7 +91,7 @@ fun PopularRepoScreen(
 
 @Composable
 fun RepositoryItem(
-    repository: com.example.githubapp.data.repository.Repository,
+    repository: Repository,
     onClick: () -> Unit
 ) {
     Card(

@@ -1,4 +1,4 @@
-package com.example.githubapp.ui.blank.data
+package com.example.githubapp.ui.githubscreen.data
 
 /**
  * Search screen ViewIntent for MVI architecture

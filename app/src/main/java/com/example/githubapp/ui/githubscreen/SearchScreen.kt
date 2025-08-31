@@ -1,4 +1,4 @@
-package com.example.githubapp.ui.blank
+package com.example.githubapp.ui.githubscreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,9 +34,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.githubapp.data.repository.Repository
-import com.example.githubapp.ui.blank.data.SearchViewIntent
-import com.example.githubapp.ui.blank.data.SearchViewModel
-import com.example.githubapp.ui.blank.data.SearchViewState
+import com.example.githubapp.ui.githubscreen.data.SearchViewIntent
+import com.example.githubapp.ui.githubscreen.data.SearchViewModel
+import com.example.githubapp.ui.githubscreen.data.SearchViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +126,7 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(state.repositories) { repository ->
-                                RepositoryItem(
+                                SearchRepositoryItem(
                                     repository = repository,
                                     onClick = { /* TODO: 处理点击事件 */ }
                                 )
@@ -163,7 +163,7 @@ fun SearchScreen(
 }
 
 @Composable
-fun RepositoryItem(
+fun SearchRepositoryItem(
     repository: Repository,
     onClick: () -> Unit
 ) {

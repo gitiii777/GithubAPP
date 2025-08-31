@@ -29,14 +29,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.githubapp.data.repository.AuthManager
 import com.example.githubapp.data.repository.GithubApiClient
-import com.example.githubapp.ui.blank.BlankScreen
-import com.example.githubapp.ui.blank.SearchScreen
-import com.example.githubapp.ui.blank.data.BlankViewModel
 import com.example.githubapp.ui.githubscreen.IssueDetailScreen
 import com.example.githubapp.ui.githubscreen.IssuesScreen
 import com.example.githubapp.ui.githubscreen.LoginScreen
 import com.example.githubapp.ui.githubscreen.PopularRepoScreen
 import com.example.githubapp.ui.githubscreen.RepoReadmeScreen
+import com.example.githubapp.ui.githubscreen.SearchScreen
 import com.example.githubapp.ui.githubscreen.UserProfileScreen
 import com.example.githubapp.ui.githubscreen.UserRepoScreen
 import com.example.githubapp.ui.githubscreen.data.IssueDetailViewModel
@@ -145,14 +143,6 @@ fun AppNavigation(
         startDestination = BottomNavItem.Home.route,
         modifier = modifier
     ) {
-        composable(BottomNavItem.Home.route) {
-            val blankViewModel: BlankViewModel = viewModel()
-            BlankScreen(
-                viewModel = blankViewModel,
-                onGetRepositories = { navController.navigate(GithubAppRouteName.PopularRepo.title) },
-                onSearch = { navController.navigate(GithubAppRouteName.Search.title) }
-            )
-        }
         composable(GithubAppRouteName.Search.title) {
             SearchScreen(
                 onBack = { navController.popBackStack() }
@@ -165,7 +155,6 @@ fun AppNavigation(
                 onRepositoryClick = { owner, repo ->
                     navController.navigate("${GithubAppRouteName.RepoReadme.title}/$owner/$repo")
                 },
-                navController = navController
             )
         }
         composable("${GithubAppRouteName.RepoReadme.title}/{owner}/{repo}") { backStackEntry ->
@@ -247,13 +236,12 @@ sealed class BottomNavItem(
     val title: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
-    object Home : BottomNavItem(GithubAppRouteName.Home.title, "首页", Icons.Default.Home)
+    object Home : BottomNavItem(GithubAppRouteName.PopularRepo.title, "首页", Icons.Default.Home)
     object Profile :
         BottomNavItem(GithubAppRouteName.Profile.title, "我的", Icons.Default.AccountCircle)
 }
 
 enum class GithubAppRouteName(val title: String) {
-    Home("home"),
     PopularRepo("PopularRepo"),
     RepoReadme("RepoReadme"),
     Search("search"),
