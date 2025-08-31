@@ -12,4 +12,5 @@ interface IGitApiController {
         order: String? = null
     ): List<Repository>
     suspend fun getAuthenticatedUser(): User
+    suspend fun getUserRepositories(): List<Repository>
 }

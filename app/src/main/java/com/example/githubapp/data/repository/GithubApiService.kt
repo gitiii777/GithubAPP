@@ -24,6 +24,13 @@ interface GithubApiService {
     @GET("user")
     suspend fun getAuthenticatedUser(): Response<User>
     
+    @GET("user/repos")
+    suspend fun getUserRepositories(
+        @Query("sort") sort: String? = "updated",
+        @Query("direction") direction: String? = "desc",
+        @Query("per_page") perPage: Int = 30
+    ): Response<List<Repository>>
+    
     @GET("https://ghapi.huchen.dev/repositories")
     suspend fun getTrendingRepositories(
         @Query("language") language: String? = null,

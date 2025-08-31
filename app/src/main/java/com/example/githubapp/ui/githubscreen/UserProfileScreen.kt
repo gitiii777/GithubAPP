@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.githubapp.data.repository.AuthManager
 import com.example.githubapp.data.repository.User
 import com.example.githubapp.ui.githubscreen.data.UserProfileViewIntent
@@ -37,7 +36,8 @@ private const val TAG = "UserProfileScreen"
 fun UserProfileScreen(
     viewModel: UserProfileViewModel = viewModel(),
     authManager: AuthManager,
-    navController: NavController
+    onLoginClick: () -> Unit,
+    onViewRepos: () -> Unit,
 ) {
     val viewState by viewModel.viewState.collectAsState()
     val isLogin by remember { authManager.isLoggedIn }
@@ -79,6 +79,7 @@ fun UserProfileScreen(
                     is UserProfileViewState.Success -> {
                         UserProfileContent(
                             user = state.user,
+                            onViewRepos = onViewRepos,
                             onLogout = {
                                 authManager.clearAuth()
                             }
@@ -95,9 +96,7 @@ fun UserProfileScreen(
             } else {
                 // 未登录状态
                 NotLoggedInContent(
-                    onLoginClick = {
-                        navController.navigate("login")
-                    }
+                    onLoginClick = onLoginClick
                 )
             }
         }
@@ -144,6 +143,7 @@ fun NotLoggedInContent(
 @Composable
 fun UserProfileContent(
     user: User,
+    onViewRepos: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     Card(
@@ -190,12 +190,22 @@ fun UserProfileContent(
                 modifier = Modifier.padding(top = 16.dp)
             )
 
+            // View repositories button
+            Button(
+                onClick = onViewRepos,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text("查看我的仓库")
+            }
+
             // Logout button
             Button(
                 onClick = onLogout,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp)
+                    .padding(top = 16.dp)
             ) {
                 Text("退出登录")
             }

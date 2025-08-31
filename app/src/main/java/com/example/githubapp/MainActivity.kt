@@ -37,11 +37,13 @@ import com.example.githubapp.ui.githubscreen.LoginScreen
 import com.example.githubapp.ui.githubscreen.PopularRepoScreen
 import com.example.githubapp.ui.githubscreen.RepoReadmeScreen
 import com.example.githubapp.ui.githubscreen.UserProfileScreen
+import com.example.githubapp.ui.githubscreen.UserRepoScreen
 import com.example.githubapp.ui.githubscreen.data.LoginViewModel
 import com.example.githubapp.ui.githubscreen.data.LoginViewModelFactory
 import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
 import com.example.githubapp.ui.githubscreen.data.RepoReadmeViewModel
 import com.example.githubapp.ui.githubscreen.data.UserProfileViewModel
+import com.example.githubapp.ui.githubscreen.data.UserRepoViewModel
 import com.example.githubapp.ui.theme.GithubAPPTheme
 
 private const val TAG = "MainActivity"
@@ -180,7 +182,12 @@ fun AppNavigation(
             UserProfileScreen(
                 viewModel = userProfileViewModel,
                 authManager = authManager,
-                navController = navController
+                onLoginClick = {
+                    navController.navigate(GithubAppRouteName.Login.title)
+                },
+                onViewRepos = {
+                    navController.navigate(GithubAppRouteName.UserRepos.title)
+                },
             )
         }
         composable(GithubAppRouteName.Login.title) {
@@ -189,6 +196,16 @@ fun AppNavigation(
                 authManager = authManager,
                 viewModel = loginViewModel,
                 navController = navController
+            )
+        }
+        composable(GithubAppRouteName.UserRepos.title) {
+            val userRepoViewModel: UserRepoViewModel = viewModel()
+            UserRepoScreen(
+                viewModel = userRepoViewModel,
+                navController = navController,
+                onRepositoryClick = { owner, repo ->
+                    navController.navigate("${GithubAppRouteName.RepoReadme.title}/$owner/$repo")
+                }
             )
         }
     }
@@ -206,4 +223,5 @@ enum class GithubAppRouteName(val title: String) {
     Search("search"),
     Profile("profile"),
     Login("login"),
+    UserRepos("user_repos"),
 }
