@@ -2,6 +2,8 @@ package com.example.githubapp.data.usecase
 
 import android.util.Log
 import com.example.githubapp.data.repository.GithubApiClient
+import com.example.githubapp.data.repository.Issue
+import com.example.githubapp.data.repository.IssueRequest
 import com.example.githubapp.data.repository.Repository
 import com.example.githubapp.data.repository.User
 
@@ -65,6 +67,26 @@ class GitApiController : IGitApiController {
             return response.body() ?: emptyList()
         } else {
             throw Exception("Failed to fetch user repositories: ${response.message()}")
+        }
+    }
+    
+    override suspend fun createIssue(owner: String, repo: String, issueRequest: IssueRequest): Issue {
+        Log.d(TAG, "createIssue: owner=$owner, repo=$repo, title=${issueRequest.title}")
+        val response = GithubApiClient.apiService.createIssue(owner, repo, issueRequest)
+        if (response.isSuccessful) {
+            return response.body() ?: throw Exception("Issue data is null")
+        } else {
+            throw Exception("Failed to create issue: ${response.message()}")
+        }
+    }
+    
+    override suspend fun getRepositoryIssues(owner: String, repo: String, state: String?): List<Issue> {
+        Log.d(TAG, "getRepositoryIssues: owner=$owner, repo=$repo, state=$state")
+        val response = GithubApiClient.apiService.getRepositoryIssues(owner, repo, state)
+        if (response.isSuccessful) {
+            return response.body() ?: emptyList()
+        } else {
+            throw Exception("Failed to fetch repository issues: ${response.message()}")
         }
     }
 }

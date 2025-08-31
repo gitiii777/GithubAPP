@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -33,11 +32,15 @@ import com.example.githubapp.data.repository.GithubApiClient
 import com.example.githubapp.ui.blank.BlankScreen
 import com.example.githubapp.ui.blank.SearchScreen
 import com.example.githubapp.ui.blank.data.BlankViewModel
+import com.example.githubapp.ui.githubscreen.IssueDetailScreen
+import com.example.githubapp.ui.githubscreen.IssuesScreen
 import com.example.githubapp.ui.githubscreen.LoginScreen
 import com.example.githubapp.ui.githubscreen.PopularRepoScreen
 import com.example.githubapp.ui.githubscreen.RepoReadmeScreen
 import com.example.githubapp.ui.githubscreen.UserProfileScreen
 import com.example.githubapp.ui.githubscreen.UserRepoScreen
+import com.example.githubapp.ui.githubscreen.data.IssueDetailViewModel
+import com.example.githubapp.ui.githubscreen.data.IssuesViewModel
 import com.example.githubapp.ui.githubscreen.data.LoginViewModel
 import com.example.githubapp.ui.githubscreen.data.LoginViewModelFactory
 import com.example.githubapp.ui.githubscreen.data.PopularRepoViewModel
@@ -50,14 +53,14 @@ private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 初始化GithubApiClient
         GithubApiClient.initialize(this)
         // 初始化AuthManager
         authManager = AuthManager.getInstance(this)
-        
+
         setContent {
             GithubAPPTheme {
                 Surface(
@@ -129,7 +132,6 @@ fun BottomNavigationBar(navController: NavHostController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -174,7 +176,8 @@ fun AppNavigation(
                 owner = owner,
                 repo = repo,
                 viewModel = repoReadmeViewModel,
-                navController = navController
+                onBackClick = { navController.popBackStack() },
+                onListIssues = { navController.navigate("${GithubAppRouteName.Issues.title}/$owner/$repo") }
             )
         }
         composable(BottomNavItem.Profile.route) {
@@ -191,29 +194,62 @@ fun AppNavigation(
             )
         }
         composable(GithubAppRouteName.Login.title) {
-            val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(authManager))
+            val loginViewModel: LoginViewModel =
+                viewModel(factory = LoginViewModelFactory(authManager))
             LoginScreen(
                 authManager = authManager,
                 viewModel = loginViewModel,
-                navController = navController
+                onLoginSuccess = { navController.popBackStack() }
             )
         }
         composable(GithubAppRouteName.UserRepos.title) {
             val userRepoViewModel: UserRepoViewModel = viewModel()
             UserRepoScreen(
                 viewModel = userRepoViewModel,
-                navController = navController,
+                onBackClick = { navController.popBackStack() },
                 onRepositoryClick = { owner, repo ->
                     navController.navigate("${GithubAppRouteName.RepoReadme.title}/$owner/$repo")
                 }
             )
         }
+        composable("${GithubAppRouteName.Issues.title}/{owner}/{repo}") { backStackEntry ->
+            val owner = backStackEntry.arguments?.getString("owner") ?: ""
+            val repo = backStackEntry.arguments?.getString("repo") ?: ""
+            val issuesViewModel: IssuesViewModel = viewModel()
+            IssuesScreen(
+                owner = owner,
+                repo = repo,
+                viewModel = issuesViewModel,
+                onBackClick = { navController.popBackStack() },
+                onIssueDetail = { detailOwner, detailRepo, issueNumber ->
+                    navController.navigate("${GithubAppRouteName.IssueDetail.title}/$detailOwner/$detailRepo/$issueNumber")
+                }
+            )
+        }
+        composable("${GithubAppRouteName.IssueDetail.title}/{owner}/{repo}/{issueNumber}") { backStackEntry ->
+            val owner = backStackEntry.arguments?.getString("owner") ?: ""
+            val repo = backStackEntry.arguments?.getString("repo") ?: ""
+            val issueNumber = backStackEntry.arguments?.getString("issueNumber")?.toIntOrNull() ?: 0
+            val issueDetailViewModel: IssueDetailViewModel = viewModel()
+            IssueDetailScreen(
+                owner = owner,
+                repo = repo,
+                issueNumber = issueNumber,
+                viewModel = issueDetailViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
     }
 }
 
-sealed class BottomNavItem(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+sealed class BottomNavItem(
+    val route: String,
+    val title: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
     object Home : BottomNavItem(GithubAppRouteName.Home.title, "首页", Icons.Default.Home)
-    object Profile : BottomNavItem(GithubAppRouteName.Profile.title, "我的", Icons.Default.AccountCircle)
+    object Profile :
+        BottomNavItem(GithubAppRouteName.Profile.title, "我的", Icons.Default.AccountCircle)
 }
 
 enum class GithubAppRouteName(val title: String) {
@@ -224,4 +260,6 @@ enum class GithubAppRouteName(val title: String) {
     Profile("profile"),
     Login("login"),
     UserRepos("user_repos"),
+    Issues("issues"),
+    IssueDetail("issue_detail"),
 }

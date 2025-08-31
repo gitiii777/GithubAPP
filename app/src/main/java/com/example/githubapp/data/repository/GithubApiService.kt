@@ -1,7 +1,9 @@
 package com.example.githubapp.data.repository
 
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -43,6 +45,25 @@ interface GithubApiService {
         @Path("repo") repo: String,
         @Query("ref") ref: String? = null
     ): Response<RepositoryReadme>
+    
+    @POST("repos/{owner}/{repo}/issues")
+    suspend fun createIssue(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Body issueRequest: IssueRequest
+    ): Response<Issue>
+    
+    @GET("repos/{owner}/{repo}/issues")
+    suspend fun getRepositoryIssues(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Query("state") state: String? = "open",
+        @Query("sort") sort: String? = "created",
+        @Query("direction") direction: String? = "desc",
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 30
+    ): Response<List<Issue>>
+
 }
 
 data class Repository(
@@ -112,4 +133,32 @@ data class RepositoryReadme(
     val git_url: String,
     val html_url: String,
     val download_url: String?
+)
+
+data class IssueRequest(
+    val title: String,
+    val body: String? = null,
+    val labels: List<String>? = null,
+    val assignees: List<String>? = null
+)
+
+data class Issue(
+    val id: Long,
+    val number: Int,
+    val title: String,
+    val body: String?,
+    val state: String,
+    val user: Owner,
+    val labels: List<Label>?,
+    val assignees: List<Owner>?,
+    val created_at: String,
+    val updated_at: String,
+    val html_url: String
+)
+
+data class Label(
+    val id: Long,
+    val name: String,
+    val color: String,
+    val description: String?
 )

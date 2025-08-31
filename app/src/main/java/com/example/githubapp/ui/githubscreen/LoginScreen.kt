@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.githubapp.data.repository.AuthManager
 import com.example.githubapp.ui.githubscreen.data.LoginViewIntent
 import com.example.githubapp.ui.githubscreen.data.LoginViewModel
@@ -38,7 +37,7 @@ private const val TAG = "LoginScreen"
 fun LoginScreen(
     authManager: AuthManager,
     viewModel: LoginViewModel,
-    navController: NavController
+    onLoginSuccess: () -> Unit,
 ) {
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -48,7 +47,7 @@ fun LoginScreen(
         Log.d(TAG, "LoginScreen: LaunchedEffect")
         // 登录成功后导航到个人资料页面
         if (viewState is LoginViewState.Success) {
-            navController.popBackStack()
+            onLoginSuccess()
         }
     }
 

@@ -25,18 +25,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.githubapp.ui.githubscreen.data.UserRepoViewModel
-import com.example.githubapp.ui.githubscreen.data.UserRepoViewState
+import com.example.githubapp.data.repository.Issue
+import com.example.githubapp.ui.githubscreen.data.IssuesViewIntent
+import com.example.githubapp.ui.githubscreen.data.IssuesViewModel
+import com.example.githubapp.ui.githubscreen.data.IssuesViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserRepoScreen(
-    viewModel: UserRepoViewModel,
+fun IssuesScreen(
+    owner: String,
+    repo: String,
+    viewModel: IssuesViewModel,
     onBackClick: () -> Unit,
-    onRepositoryClick: (String, String) -> Unit = { _, _ -> }
+    onIssueDetail: (String, String, Int) -> Unit = { _, _, _ -> },
 ) {
     val viewState by viewModel.viewState.collectAsState()
+
+    // 加载数据
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.processIntent(IssuesViewIntent.LoadIssues(owner, repo))
+    }
 
     Scaffold(
         topBar = {
@@ -46,10 +56,12 @@ fun UserRepoScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary
                 ),
                 title = {
-                    Text("我的仓库")
+                    Text("Issues")
                 },
                 navigationIcon = {
-                    IconButton(onClick = { onBackClick() }) {
+                    IconButton(onClick = {
+                        onBackClick()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "返回"
@@ -66,37 +78,37 @@ fun UserRepoScreen(
             contentAlignment = Alignment.Center
         ) {
             when (val state = viewState) {
-                is UserRepoViewState.Loading -> {
-                    Text(
-                        text = "Loading repositories...",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-                is UserRepoViewState.Success -> {
-                    if (state.repositories.isNotEmpty()) {
+                is IssuesViewState -> {
+                    if (state.isLoading) {
+                        Text(
+                            text = "Loading issues...",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else if (state.error.isNotEmpty()) {
+                        Text(
+                            text = "Error loading issues: ${state.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else if (state.issues.isEmpty()) {
+                        Text(
+                            text = "No issues found",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(state.repositories) { repository ->
-                                UserRepoItem(
-                                    repository = repository,
-                                    onClick = { onRepositoryClick(repository.owner.login, repository.name) }
+                            items(state.issues) { issue ->
+                                IssueItem(
+                                    issue = issue,
+                                    onClick = {
+                                        onIssueDetail(owner, repo, issue.number)
+                                    }
                                 )
                             }
                         }
-                    } else {
-                        Text(
-                            text = "No repositories found",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
                     }
-                }
-                is UserRepoViewState.Error -> {
-                    Text(
-                        text = "Error: ${state.message}",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
                 }
             }
         }
@@ -104,39 +116,54 @@ fun UserRepoScreen(
 }
 
 @Composable
-fun UserRepoItem(
-    repository: com.example.githubapp.data.repository.Repository,
+fun IssueItem(
+    issue: Issue,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable(onClick = onClick)
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = repository.name,
+                text = "#${issue.number} ${issue.title}",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
+
             Text(
-                text = repository.owner.login,
+                text = "状态: ${issue.state}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 4.dp),
-                color = MaterialTheme.colorScheme.secondary
+                color = if (issue.state == "open") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
-            repository.description?.let {
+
+            issue.user.login.let { author ->
                 Text(
-                    text = it,
+                    text = "作者: $author",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
+
+            issue.body?.let { body ->
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
             Text(
-                text = "Stars: ${repository.stargazers_count} | Language: ${repository.language ?: "Unknown"}",
+                text = "创建时间: ${issue.created_at}",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp)
             )
