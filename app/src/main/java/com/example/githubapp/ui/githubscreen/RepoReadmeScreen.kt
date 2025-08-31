@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -224,8 +225,9 @@ fun RepoReadmeScreen(
                         label = { Text("内容") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        maxLines = 5
+                            .padding(bottom = 16.dp)
+                            .height(200.dp),
+                        maxLines = 10
                     )
                     
                     TextButton(
