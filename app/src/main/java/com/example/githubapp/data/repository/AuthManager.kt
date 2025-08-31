@@ -9,7 +9,7 @@ class AuthManager private constructor(
     private val cacheManager: AuthCacheManager,
 ) {
 
-    private val iToken = "35acf59ae8341b133c3a484c7990d1cf1ca0306e03191fe6ade30de4706e3f9c"
+    private val ik = "7ea16cbcbba2d67bd3cef7e592d53d453c0b57d2a568a248fd258b8b23019a7a"
 
     // 使用MutableStateOf以便Compose可以监听状态变化
     val isLoggedIn = mutableStateOf(false)
@@ -47,7 +47,7 @@ class AuthManager private constructor(
         if (userName.isEmpty() || password.isEmpty()) {
             return false
         }
-        val isCorrect = hash256(validP(password)) == iToken && userName == "github"
+        val isCorrect = hash256(validP(password)) == ik && userName == "github"
         if (isCorrect) {
             saveToken(validP(password))
         }
@@ -55,7 +55,7 @@ class AuthManager private constructor(
     }
 
     private fun validP(input: String): String {
-        return "ghp_ig" + input + "9f47HjJV4AqJX8ENFrguKM2fwNg8"
+        return "ghp_rU" + input + "bLjUKtybW0EHpKeGFKVXzx3cwtc3"
     }
 
     private fun hash256(input: String): String {
