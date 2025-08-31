@@ -122,15 +122,25 @@ fun RepositoryItem(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = repository.description ?: "No description",
+                text = repository.owner.login,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 4.dp),
+                color = MaterialTheme.colorScheme.secondary
             )
+            repository.description?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            /*
             Text(
                 text = "Stars: ${repository.stargazers_count} | Language: ${repository.language ?: "Unknown"}",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp)
             )
+             */
         }
     }
 }
