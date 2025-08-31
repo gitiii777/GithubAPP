@@ -42,8 +42,9 @@ import com.example.githubapp.ui.githubscreen.data.SearchViewState
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
+    viewModel: SearchViewModel = viewModel(),
     onBack: () -> Unit = {},
-    viewModel: SearchViewModel = viewModel()
+    onRepositoryClick: (String, String) -> Unit = { _, _ -> }
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val viewState by viewModel.viewState.collectAsState()
@@ -128,7 +129,7 @@ fun SearchScreen(
                             items(state.repositories) { repository ->
                                 SearchRepositoryItem(
                                     repository = repository,
-                                    onClick = { /* TODO: 处理点击事件 */ }
+                                    onClick = { onRepositoryClick(repository.owner.login, repository.name) }
                                 )
                             }
                         }

@@ -148,7 +148,10 @@ fun AppNavigation(
     ) {
         composable(GithubAppRouteName.Search.title) {
             SearchScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onRepositoryClick = { owner, repo ->
+                    navController.navigate("${GithubAppRouteName.RepoReadme.title}/$owner/$repo")
+                },
             )
         }
         composable(GithubAppRouteName.PopularRepo.title) {
