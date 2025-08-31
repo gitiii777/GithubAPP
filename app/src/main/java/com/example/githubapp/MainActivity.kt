@@ -158,6 +158,7 @@ fun AppNavigation(
                 onRepositoryClick = { owner, repo ->
                     navController.navigate("${GithubAppRouteName.RepoReadme.title}/$owner/$repo")
                 },
+                onSearch = { navController.navigate(GithubAppRouteName.Search.title) }
             )
         }
         composable("${GithubAppRouteName.RepoReadme.title}/{owner}/{repo}") { backStackEntry ->

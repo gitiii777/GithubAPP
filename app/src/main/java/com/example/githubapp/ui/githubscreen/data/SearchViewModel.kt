@@ -39,9 +39,11 @@ class SearchViewModel(
                 withContext(Dispatchers.IO) {
                     val repositories = gitApiController.searchRepositories(
                         query,
-                        "stars",
+                        "best match",
                         "desc"
-                    )
+                    ).sortedBy {
+                        -it.stargazers_count
+                    }
                     _viewState.value = SearchViewState.Success(repositories)
                 }
             } catch (e: Exception) {
